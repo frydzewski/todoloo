@@ -1,0 +1,28 @@
+{
+  "name": "todoloo",
+  "version": "0.1.0",
+  "description": "Global task inbox for Claude Code",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "todoloo": "./bin/todoloo.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": ["mcp", "todo", "claude-code"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.18.2",
+    "nanoid": "^5.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
+  }
+}
