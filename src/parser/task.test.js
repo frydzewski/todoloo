@@ -35,3 +35,35 @@ describe('Task', () => {
       .toThrow('Invalid priority');
   });
 });
+
+describe('Task.toMarkdown', () => {
+  it('serializes minimal task', () => {
+    const task = new Task({ description: 'Buy milk', id: 'abc12345' });
+    expect(task.toMarkdown()).toBe('- [ ] Buy milk <!-- id:abc12345 -->');
+  });
+
+  it('serializes completed task', () => {
+    const task = new Task({ description: 'Buy milk', completed: true, id: 'abc12345' });
+    expect(task.toMarkdown()).toBe('- [x] Buy milk <!-- id:abc12345 -->');
+  });
+
+  it('serializes task with all fields', () => {
+    const task = new Task({
+      description: 'Call Jordan',
+      priority: 'high',
+      tags: ['personal', 'urgent'],
+      due: '2024-02-05T15:00',
+      id: 'abc12345'
+    });
+    expect(task.toMarkdown()).toBe('- [ ] Call Jordan @2024-02-05T15:00 #personal #urgent !high <!-- id:abc12345 -->');
+  });
+
+  it('serializes task with parent', () => {
+    const task = new Task({
+      description: 'Subtask',
+      id: 'child123',
+      parent: 'parent12'
+    });
+    expect(task.toMarkdown()).toBe('- [ ] Subtask <!-- id:child123 parent:parent12 -->');
+  });
+});

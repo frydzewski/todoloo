@@ -17,4 +17,30 @@ export class Task {
     this.due = due;
     this.parent = parent;
   }
+
+  toMarkdown() {
+    const checkbox = this.completed ? '[x]' : '[ ]';
+    let line = `- ${checkbox} ${this.description}`;
+
+    if (this.due) {
+      line += ` @${this.due}`;
+    }
+
+    for (const tag of this.tags) {
+      line += ` #${tag}`;
+    }
+
+    if (this.priority !== 'medium') {
+      line += ` !${this.priority}`;
+    }
+
+    // Build metadata comment
+    let meta = `id:${this.id}`;
+    if (this.parent) {
+      meta += ` parent:${this.parent}`;
+    }
+    line += ` <!-- ${meta} -->`;
+
+    return line;
+  }
 }
