@@ -1,5 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 export function createMcpServer(taskService) {
   const tools = [
@@ -164,11 +165,11 @@ export function createMcpServer(taskService) {
         { capabilities: { tools: {} } }
       );
 
-      server.setRequestHandler('tools/list', async () => ({
+      server.setRequestHandler(ListToolsRequestSchema, async () => ({
         tools
       }));
 
-      server.setRequestHandler('tools/call', async (request) => {
+      server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { name, arguments: args } = request.params;
         return toolHandlers[name](args);
       });
