@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todoloo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { h, render } from 'https://esm.sh/preact@10.19.3';
+    import { useState, useEffect } from 'https://esm.sh/preact@10.19.3/hooks';
+    import htm from 'https://esm.sh/htm@3.1.1';
+
+    const html = htm.bind(h);
+
+    // API helpers
+    const api = {
+      async getTasks(filters = {}) {
+        const params = new URLSearchParams(filters);
+        const res = await fetch(`/api/tasks?${params}`);
+        const data = await res.json();
+        return data.tasks;
+      },
+      async addTask(task) {
+        const res = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(task)
+        });
+        const data = await res.json();
+        return data.task;
+      },
+      async completeTask(id) {
+        const res = await fetch(`/api/tasks/${id}/complete`, { method: 'POST' });
+        const data = await res.json();
+        return data.task;
+      },
+      async deleteTask(id) {
+        await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      },
+      async updateTask(id, updates) {
+        const res = await fetch(`/api/tasks/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        });
+        const data = await res.json();
+        return data.task;
+      }
+    };
+
+    // Components
+    function TaskItem({ task, onComplete, onDelete, onUpdate }) {
+      const [editing, setEditing] = useState(false);
+      const [editText, setEditText] = useState(task.description);
+
+      const handleSave = async () => {
+        await onUpdate(task.id, { description: editText });
+        setEditing(false);
+      };
+
+      const priorityClass = task.priority !== 'medium' ? `priority-${task.priority}` : '';
+
+      return html`
+        <div class="task-item ${task.completed ? 'completed' : ''} ${priorityClass}">
+          <input
+            type="checkbox"
+            checked=${task.completed}
+            onChange=${() => onComplete(task.id)}
+          />
+          ${editing ? html`
+            <input
+              type="text"
+              class="edit-input"
+              value=${editText}
+              onInput=${e => setEditText(e.target.value)}
+              onKeyDown=${e => e.key === 'Enter' && handleSave()}
+              onBlur=${handleSave}
+            />
+          ` : html`
+            <span class="task-text" onClick=${() => setEditing(true)}>
+              ${task.description}
+            </span>
+          `}
+          ${task.due && html`<span class="due">@${task.due}</span>`}
+          ${task.tags.map(tag => html`<span class="tag">#${tag}</span>`)}
+          ${task.priority !== 'medium' && html`<span class="priority">!${task.priority}</span>`}
+          <button class="delete-btn" onClick=${() => onDelete(task.id)}>×</button>
+        </div>
+      `;
+    }
+
+    function AddTask({ onAdd }) {
+      const [text, setText] = useState('');
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!text.trim()) return;
+        await onAdd({ description: text });
+        setText('');
+      };
+
+      return html`
+        <form class="add-task" onSubmit=${handleSubmit}>
+          <input
+            type="text"
+            placeholder="Add a task..."
+            value=${text}
+            onInput=${e => setText(e.target.value)}
+          />
+          <button type="submit">Add</button>
+        </form>
+      `;
+    }
+
+    function FilterBar({ filter, onFilterChange }) {
+      return html`
+        <div class="filter-bar">
+          <button
+            class=${filter === 'all' ? 'active' : ''}
+            onClick=${() => onFilterChange('all')}
+          >All</button>
+          <button
+            class=${filter === 'open' ? 'active' : ''}
+            onClick=${() => onFilterChange('open')}
+          >Open</button>
+          <button
+            class=${filter === 'completed' ? 'active' : ''}
+            onClick=${() => onFilterChange('completed')}
+          >Completed</button>
+        </div>
+      `;
+    }
+
+    function App() {
+      const [tasks, setTasks] = useState([]);
+      const [filter, setFilter] = useState('open');
+      const [loading, setLoading] = useState(true);
+
+      const loadTasks = async () => {
+        setLoading(true);
+        const filters = filter !== 'all' ? { status: filter } : {};
+        const tasks = await api.getTasks(filters);
+        setTasks(tasks);
+        setLoading(false);
+      };
+
+      useEffect(() => { loadTasks(); }, [filter]);
+
+      const handleAdd = async (task) => {
+        await api.addTask(task);
+        loadTasks();
+      };
+
+      const handleComplete = async (id) => {
+        await api.completeTask(id);
+        loadTasks();
+      };
+
+      const handleDelete = async (id) => {
+        await api.deleteTask(id);
+        loadTasks();
+      };
+
+      const handleUpdate = async (id, updates) => {
+        await api.updateTask(id, updates);
+        loadTasks();
+      };
+
+      return html`
+        <div class="container">
+          <h1>Todoloo</h1>
+          <${AddTask} onAdd=${handleAdd} />
+          <${FilterBar} filter=${filter} onFilterChange=${setFilter} />
+          ${loading ? html`<p>Loading...</p>` : html`
+            <div class="task-list">
+              ${tasks.map(task => html`
+                <${TaskItem}
+                  key=${task.id}
+                  task=${task}
+                  onComplete=${handleComplete}
+                  onDelete=${handleDelete}
+                  onUpdate=${handleUpdate}
+                />
+              `)}
+              ${tasks.length === 0 && html`<p class="empty">No tasks</p>`}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    render(html`<${App} />`, document.getElementById('app'));
+  </script>
+</body>
+</html>
