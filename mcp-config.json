@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "todoloo": {
+      "command": "node",
+      "args": ["src/index.js", "mcp"],
+      "cwd": "TODOLOO_PATH"
+    }
+  }
+}
