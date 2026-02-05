@@ -1,5 +1,5 @@
 ---
-name: todoloo:done
+name: done
 description: Mark a task as complete
 mcp_server: todoloo
 ---

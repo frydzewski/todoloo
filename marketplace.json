@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "todoloo",
+  "description": "Global task inbox for Claude Code",
+  "owner": {
+    "name": "Frank Rydzewski",
+    "email": "frydzewski@users.noreply.github.com"
+  },
+  "plugins": [
+    {
+      "name": "todoloo",
+      "description": "Global task inbox for Claude Code - track tasks across projects with MCP integration",
+      "version": "0.1.0",
+      "author": {
+        "name": "Frank Rydzewski"
+      },
+      "source": ".",
+      "category": "productivity"
+    }
+  ]
+}

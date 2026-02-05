@@ -1,5 +1,5 @@
 ---
-name: todoloo:tasks
+name: tasks
 description: List tasks from Todoloo
 mcp_server: todoloo
 ---

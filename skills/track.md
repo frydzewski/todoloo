@@ -1,5 +1,5 @@
 ---
-name: todoloo:track
+name: track
 description: Add a task to Todoloo inbox
 mcp_server: todoloo
 ---

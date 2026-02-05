@@ -1,0 +1,13 @@
+{
+  "name": "todoloo",
+  "description": "Global task inbox for Claude Code - track tasks across projects with MCP integration",
+  "version": "0.1.0",
+  "author": {
+    "name": "Frank Rydzewski",
+    "email": "frydzewski@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/frydzewski/todoloo",
+  "repository": "https://github.com/frydzewski/todoloo",
+  "license": "MIT",
+  "category": "productivity"
+}
