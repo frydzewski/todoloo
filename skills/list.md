@@ -1,6 +1,6 @@
 ---
-name: tasks
-description: List tasks from Todoloo
+name: list
+description: List tasks from your inbox
 mcp_server: todoloo
 ---
 
@@ -11,15 +11,15 @@ Show tasks from your Todoloo inbox.
 ## Usage
 
 ```
-/todoloo:tasks [--status open|completed] [--tag tagname] [--priority high|medium|low]
+/todoloo:list [--status open|completed] [--tag tagname] [--priority high|medium|low]
 ```
 
 ## Examples
 
 ```
-/todoloo:tasks
-/todoloo:tasks --status open
-/todoloo:tasks --tag work --priority high
+/todoloo:list
+/todoloo:list --status open
+/todoloo:list --tag work --priority high
 ```
 
 ## Implementation
