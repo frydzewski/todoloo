@@ -9,13 +9,13 @@ Global task inbox and planning system for Claude Code. Track tasks across projec
 Add this marketplace to Claude Code:
 
 ```bash
-/plugin add-marketplace https://github.com/frydzewski/todoloo
+/plugin marketplace add frydzewski/todoloo                                                                               
 ```
 
 Then install the plugin:
 
 ```bash
-/plugin install todoloo@todoloo
+/plugin install todoloo
 ```
 
 ### Manual Installation
