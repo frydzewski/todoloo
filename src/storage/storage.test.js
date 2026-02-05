@@ -10,7 +10,7 @@ describe('Storage', () => {
   let storage;
 
   beforeEach(async () => {
-    testDir = path.join(os.tmpdir(), `todoloo-test-${Date.now()}`);
+    testDir = path.join(os.tmpdir(), `todoloo-storage-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(testDir, { recursive: true });
     storage = new Storage(testDir);
   });
