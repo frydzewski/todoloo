@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "todoloo",
-      "source": ".",
+      "source": "./",
       "description": "Global task inbox for Claude Code - track tasks across projects with MCP integration"
     }
   ]
