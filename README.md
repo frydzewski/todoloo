@@ -42,20 +42,27 @@ Then install the plugin:
 
 ## Usage
 
-### Slash Commands
+### Commands
 
-Once installed, use these commands in Claude Code:
-
-- `/todoloo:track "Task description"` - Add a new task
-- `/todoloo:tasks` - List your tasks
-- `/todoloo:done <id>` - Mark a task complete
+| Command | Description |
+|---------|-------------|
+| `/todoloo:inbox` | Dashboard view of your inbox |
+| `/todoloo:add <text>` | Quick add a task |
+| `/todoloo:list` | List tasks with filters |
+| `/todoloo:done <id>` | Mark a task complete |
+| `/todoloo:search <query>` | Search tasks |
+| `/todoloo:update <id>` | Update a task |
+| `/todoloo:delete <id>` | Delete a task |
 
 ### Examples
 
 ```
-/todoloo:track "Review PR #123" --priority high --tag work
-/todoloo:tasks --status open
+/todoloo:inbox
+/todoloo:add Review PR #123 --priority high --tag work
+/todoloo:list --status open --priority high
 /todoloo:done abc12345
+/todoloo:search groceries
+/todoloo:update abc123 --due 2024-02-10
 ```
 
 ### MCP Tools
