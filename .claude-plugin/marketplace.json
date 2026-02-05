@@ -1,20 +1,11 @@
 {
   "name": "todoloo",
-  "description": "Global task inbox for Claude Code",
-  "owner": {
-    "name": "Frank Rydzewski",
-    "email": "frydzewski@users.noreply.github.com"
-  },
+  "owner": { "name": "Frank Rydzewski" },
   "plugins": [
     {
       "name": "todoloo",
-      "description": "Global task inbox for Claude Code - track tasks across projects with MCP integration",
-      "version": "0.1.0",
-      "source": "./",
-      "author": {
-        "name": "Frank Rydzewski",
-        "email": "frydzewski@users.noreply.github.com"
-      }
+      "source": ".",
+      "description": "Global task inbox for Claude Code - track tasks across projects with MCP integration"
     }
   ]
 }
