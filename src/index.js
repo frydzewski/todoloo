@@ -2,6 +2,7 @@ import path from 'path';
 import os from 'os';
 import { Storage } from './storage/storage.js';
 import { TaskService } from './services/task-service.js';
+import { PlanService } from './services/plan-service.js';
 import { createMcpServer } from './mcp/server.js';
 import { createHttpServer } from './http/server.js';
 
@@ -15,10 +16,11 @@ async function main() {
 
   const storage = new Storage(baseDir);
   const taskService = new TaskService(storage);
+  const planService = new PlanService(storage);
 
   if (mode === 'mcp') {
     // MCP mode - communicate via stdio
-    const mcpServer = createMcpServer(taskService);
+    const mcpServer = createMcpServer(taskService, planService);
     await mcpServer.start();
     console.error('Todoloo MCP server started');
   } else {

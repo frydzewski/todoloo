@@ -2,7 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
-export function createMcpServer(taskService) {
+export function createMcpServer(taskService, planService) {
   const tools = [
     {
       name: 'add_task',
@@ -90,6 +90,113 @@ export function createMcpServer(taskService) {
         },
         required: ['id', 'subtasks']
       }
+    },
+    // Plan tools
+    {
+      name: 'create_plan',
+      description: 'Create a new named plan for tracking work',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name (used as identifier)' },
+          description: { type: 'string', description: 'Optional description of the plan' }
+        },
+        required: ['name']
+      }
+    },
+    {
+      name: 'get_plan',
+      description: 'Get a plan by name, including all items and handoff notes',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' }
+        },
+        required: ['name']
+      }
+    },
+    {
+      name: 'add_plan_item',
+      description: 'Add content to a plan - can be large text, markdown, or structured content',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' },
+          content: { type: 'string', description: 'Content to add (can be large text, markdown, etc.)' },
+          position: { type: 'string', enum: ['top', 'bottom'], description: 'Where to add (default: bottom)' }
+        },
+        required: ['name', 'content']
+      }
+    },
+    {
+      name: 'update_plan_item',
+      description: 'Update a plan item status or content',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' },
+          item_id: { type: 'string', description: 'Item ID to update' },
+          content: { type: 'string', description: 'New content (optional)' },
+          status: { type: 'string', enum: ['pending', 'in_progress', 'done', 'skipped'], description: 'New status' }
+        },
+        required: ['name', 'item_id']
+      }
+    },
+    {
+      name: 'remove_plan_item',
+      description: 'Remove an item from a plan',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' },
+          item_id: { type: 'string', description: 'Item ID to remove' }
+        },
+        required: ['name', 'item_id']
+      }
+    },
+    {
+      name: 'list_plans',
+      description: 'List all plans with summary info',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      }
+    },
+    {
+      name: 'handoff',
+      description: 'Record handoff notes for a plan - use when stopping work to document current state',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' },
+          notes: { type: 'string', description: 'Current state notes - what was done, where you stopped' },
+          instruction: { type: 'string', description: 'Instructions for resuming - what to do next' },
+          context: { type: 'object', description: 'Optional structured context (current file, line, etc.)' }
+        },
+        required: ['name', 'notes']
+      }
+    },
+    {
+      name: 'clear_handoff',
+      description: 'Clear handoff notes from a plan (after resuming work)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' }
+        },
+        required: ['name']
+      }
+    },
+    {
+      name: 'delete_plan',
+      description: 'Delete a plan',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Plan name' }
+        },
+        required: ['name']
+      }
     }
   ];
 
@@ -132,8 +239,95 @@ export function createMcpServer(taskService) {
       const text = `Split into ${subtasks.length} subtasks:\n` +
         subtasks.map(t => formatTaskLine(t)).join('\n');
       return { content: [{ type: 'text', text }] };
+    },
+    // Plan handlers
+    create_plan: async (args) => {
+      const plan = await planService.createPlan(args);
+      return { content: [{ type: 'text', text: `Created plan: ${plan.name}` }] };
+    },
+    get_plan: async (args) => {
+      const plan = await planService.getPlan(args.name);
+      return { content: [{ type: 'text', text: formatPlan(plan) }] };
+    },
+    add_plan_item: async (args) => {
+      const { plan, item } = await planService.addPlanItem(args.name, {
+        content: args.content,
+        position: args.position
+      });
+      return { content: [{ type: 'text', text: `Added item [${item.id}] to plan "${plan.name}"` }] };
+    },
+    update_plan_item: async (args) => {
+      const { plan, item } = await planService.updatePlanItem(args.name, args.item_id, {
+        content: args.content,
+        status: args.status
+      });
+      return { content: [{ type: 'text', text: `Updated item [${item.id}] in plan "${plan.name}" - status: ${item.status}` }] };
+    },
+    remove_plan_item: async (args) => {
+      const { plan, removed } = await planService.removePlanItem(args.name, args.item_id);
+      return { content: [{ type: 'text', text: `Removed item [${removed.id}] from plan "${plan.name}"` }] };
+    },
+    list_plans: async () => {
+      const plans = await planService.listPlans();
+      if (plans.length === 0) {
+        return { content: [{ type: 'text', text: 'No plans found.' }] };
+      }
+      const text = plans.map(p => {
+        let line = `[${p.name}] ${p.description || '(no description)'}`;
+        line += ` - ${p.pendingCount}/${p.itemCount} pending`;
+        if (p.hasHandoff) line += ' (has handoff)';
+        return line;
+      }).join('\n');
+      return { content: [{ type: 'text', text }] };
+    },
+    handoff: async (args) => {
+      const plan = await planService.handoff(args.name, {
+        notes: args.notes,
+        instruction: args.instruction,
+        context: args.context
+      });
+      return { content: [{ type: 'text', text: `Handoff recorded for plan "${plan.name}"` }] };
+    },
+    clear_handoff: async (args) => {
+      const plan = await planService.clearHandoff(args.name);
+      return { content: [{ type: 'text', text: `Handoff cleared for plan "${plan.name}"` }] };
+    },
+    delete_plan: async (args) => {
+      await planService.deletePlan(args.name);
+      return { content: [{ type: 'text', text: `Deleted plan "${args.name}"` }] };
     }
   };
+
+  function formatPlan(plan) {
+    let text = `# Plan: ${plan.name}\n`;
+    if (plan.description) text += `${plan.description}\n`;
+    text += `\nCreated: ${plan.created}\nUpdated: ${plan.updated}\n`;
+
+    if (plan.handoff) {
+      text += `\n## Handoff (${plan.handoff.timestamp})\n`;
+      text += `**Notes:** ${plan.handoff.notes}\n`;
+      if (plan.handoff.instruction) {
+        text += `**Resume instructions:** ${plan.handoff.instruction}\n`;
+      }
+      if (plan.handoff.context && Object.keys(plan.handoff.context).length > 0) {
+        text += `**Context:** ${JSON.stringify(plan.handoff.context)}\n`;
+      }
+    }
+
+    text += `\n## Items (${plan.items.length})\n`;
+    if (plan.items.length === 0) {
+      text += '(no items)\n';
+    } else {
+      for (const item of plan.items) {
+        const status = item.status === 'done' ? '[x]' :
+                       item.status === 'in_progress' ? '[~]' :
+                       item.status === 'skipped' ? '[-]' : '[ ]';
+        text += `\n${status} [${item.id}]\n${item.content}\n`;
+      }
+    }
+
+    return text;
+  }
 
   function formatTaskLine(task) {
     let line = `[${task.id}] ${task.description}`;

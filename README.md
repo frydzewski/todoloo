@@ -1,6 +1,6 @@
 # Todoloo
 
-Global task inbox for Claude Code. Track tasks across all your projects with MCP integration.
+Global task inbox and planning system for Claude Code. Track tasks across projects, create persistent plans, and hand off work between sessions with MCP integration.
 
 ## Installation
 
@@ -42,7 +42,7 @@ Then install the plugin:
 
 ## Usage
 
-### Commands
+### Task Commands
 
 | Command | Description |
 |---------|-------------|
@@ -54,21 +54,46 @@ Then install the plugin:
 | `/todoloo:update <id>` | Update a task |
 | `/todoloo:delete <id>` | Delete a task |
 
+### Plan Commands
+
+Plans are persistent, named containers for tracking multi-step work. They support handoffs between sessions.
+
+| Command | Description |
+|---------|-------------|
+| `/todoloo:create-plan <name>` | Create a new plan |
+| `/todoloo:plan <name> <content>` | Add content to a plan (supports large text/markdown) |
+| `/todoloo:show-plan <name>` | View a plan's contents |
+| `/todoloo:plans` | List all plans |
+| `/todoloo:plan-done <name> <id>` | Mark a plan item as done |
+| `/todoloo:handoff <name> <notes>` | Record handoff notes before stopping |
+| `/todoloo:resume <name>` | Resume work on a plan (shows and clears handoff) |
+| `/todoloo:delete-plan <name>` | Delete a plan |
+
 ### Examples
 
+**Tasks:**
 ```
 /todoloo:inbox
 /todoloo:add Review PR #123 --priority high --tag work
-/todoloo:list --status open --priority high
 /todoloo:done abc12345
-/todoloo:search groceries
-/todoloo:update abc123 --due 2024-02-10
+```
+
+**Plans:**
+```
+/todoloo:create-plan auth-refactor Refactor authentication system
+/todoloo:plan auth-refactor ## Phase 1
+- Add OAuth2 provider
+- Configure redirect URLs
+- Update middleware
+
+/todoloo:show-plan auth-refactor
+/todoloo:handoff auth-refactor Completed OAuth2 setup. Next: implement middleware. Tests passing.
+/todoloo:resume auth-refactor
 ```
 
 ### MCP Tools
 
-The following MCP tools are available:
-
+**Task Tools:**
 | Tool | Description |
 |------|-------------|
 | `add_task` | Add a new task to the inbox |
@@ -78,6 +103,19 @@ The following MCP tools are available:
 | `update_task` | Update a task |
 | `search_tasks` | Search tasks by text |
 | `split_task` | Split a task into subtasks |
+
+**Plan Tools:**
+| Tool | Description |
+|------|-------------|
+| `create_plan` | Create a new named plan |
+| `get_plan` | Get a plan with all items and handoff |
+| `add_plan_item` | Add content to a plan |
+| `update_plan_item` | Update item status/content |
+| `remove_plan_item` | Remove an item from a plan |
+| `list_plans` | List all plans with summaries |
+| `handoff` | Record handoff notes |
+| `clear_handoff` | Clear handoff after resuming |
+| `delete_plan` | Delete a plan |
 
 ## Data Storage
 
